@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Governance Competency Assessment & Policy Tailoring MVP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f2f5; /* Lighter grey */
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        h1 {
+            text-align: center;
+            color: #005a9c; /* Deeper blue */
+            margin-bottom: 15px;
+        }
+        h2 {
+            color: #005a9c;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+            margin-top: 35px;
+            margin-bottom: 20px;
+        }
+        h3 { /* For clause topics */
+            color: #0067cc;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+        .dimension-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .question {
+            margin-bottom: 18px;
+        }
+        .question p {
+            margin: 0 0 8px 0;
+            font-weight: bold;
+            color: #444;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+        button#generateChartBtn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 25px;
+            transition: background-color 0.3s ease;
+        }
+        button#generateChartBtn:hover {
+            background-color: #0056b3;
+        }
+        #chartContainer {
+            width: 95%;
+            max-width: 750px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        #tailoredPolicyContainer {
+            display: none; /* Hidden initially */
+        }
+        #tailoredPolicyOutput {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-top: 20px;
+            font-size: 0.95em;
+        }
+        .policy-category h2 {
+            font-size: 1.4em;
+            color: #005a9c;
+            border-bottom: 1px dashed #007bff;
+            padding-bottom: 10px;
+            margin-top: 25px;
+        }
+        .policy-clause {
+            margin-bottom: 20px;
+            padding-left: 15px;
+            border-left: 3px solid #007bff; /* Accent for clauses */
+        }
+        .policy-clause p {
+            margin-bottom: 8px;
+        }
+        .emphasis-strong p { /* For strongly emphasized clauses */
+            font-weight: bold;
+            color: #d9534f; /* Bootstrap danger red for strong emphasis */
+        }
+        .emphasis-highlight p { /* For general highlights */
+             background-color: #fff3cd; /* Light yellow highlight */
+             padding: 5px;
+             border-radius: 3px;
+        }
+        .placeholder-text {
+            color: #800080; /* Purple */
+            font-style: italic;
+            font-weight: bold;
+        }
+        .competency-score-inline {
+            font-weight: bold;
+            color: #28a745; /* Green for scores */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Governance Competency Assessment</h1>
+        <p style="text-align: center; margin-bottom: 25px;">Rate your organisation's competency for each area on a scale of 1 (Basic Awareness) to 5 (Expert/Leading). This will help generate tailored AI governance policy guidance.</p>
+
+        <div id="assessmentForm">
+            <!-- Questions will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <button id="generateChartBtn">Assess Competency & Generate Policy Guidance</button>
+    </div>
+
+    <div id="chartContainer">
+        <canvas id="competencyRadarChart"></canvas>
+    </div>
+
+    <div class="container" id="tailoredPolicyContainer">
+        <h2>Tailored AI Governance Policy Guidance (Draft)</h2>
+        <p><em>This is an illustrative draft generated based on your competency assessment. It requires thorough review, customisation with your specific organisational details (e.g., replacing placeholders like <span class="placeholder-text">[Organisation Ltd.]</span> and <span class="placeholder-text">[ORGANISATION STRATEGY VISION]</span>), and formal approval.</em></p>
+        <div id="tailoredPolicyOutput">
+            <!-- Tailored policy text will be inserted here -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const questionsData = {
+            "Accountability": [
+                "How clearly are roles and responsibilities for AI governance (including ethics, legal, risk oversight) defined and assigned within the organisation?",
+                "To what extent is there a formal AI Governance body (e.g., committee, board) with a clear mandate and authority?",
+                "How well-documented and communicated is the organisation's strategy for ensuring AI systems comply with relevant regulations and ethical standards?"
+            ],
+            "Risk Management": [
+                "How comprehensive is the process for identifying, assessing, and documenting AI-specific risks (bias, safety, security, ethical) before deployment?",
+                "To what extent are formal risk mitigation, monitoring, and incident response plans developed and implemented for AI systems?",
+                "How well is the AI risk management framework integrated with the organisation's broader enterprise risk management practices?"
+            ],
+            "Record Keeping": [
+                "How robust are policies and procedures for maintaining auditable records of AI systems (design, data, models, decisions, performance metrics)?",
+                "To what extent is version control for AI models and their training datasets consistently applied?",
+                "How effectively are AI audit logs managed to support traceability, compliance checks, and incident investigation?"
+            ],
+            "Protect (Data & Systems)": [ // Renamed for clarity
+                "How effectively are data quality, integrity, provenance, and security measures incorporated throughout the AI lifecycle, especially for sensitive data?",
+                "How strong are data access controls, privacy-preserving techniques, and compliance mechanisms with data protection laws (e.g., Privacy Act) for AI systems?",
+                "How adequately are AI models and systems themselves protected against cybersecurity threats, unauthorized access, or manipulation?"
+            ],
+            "Performance & Monitoring": [ // Renamed for clarity
+                "How rigorous is the testing and validation framework for AI models, evaluating aspects like accuracy, reliability, fairness, robustness, and explainability?",
+                "To what extent are key performance indicators (KPIs) used for continuous monitoring of AI systems in production environments?",
+                "How established are feedback loops for AI model improvement, including processes for retraining, retiring, or addressing performance degradation or drift?"
+            ],
+            "Human Control & Oversight": [ // Renamed for clarity
+                "To what extent do AI systems, especially those in critical applications, allow for meaningful human oversight, intervention, and final decision-making authority?",
+                "How effective are fail-safe mechanisms that allow human operators to safely override or disengage AI systems?",
+                "How comprehensive is the training provided to staff on AI capabilities, limitations, appropriate use, and human oversight responsibilities?"
+            ],
+            "Supply Chain (AI Vendors)": [ // Renamed for clarity
+                "How clear and comprehensive are policies for procuring third-party AI systems or components, including due diligence on vendor capabilities and AI ethics practices?",
+                "To what extent do contracts with AI vendors clearly define responsibilities for data governance, security, model transparency, and risk management?",
+                "How effectively does the organisation assess and monitor AI risks originating from its supply chain and third-party AI providers?"
+            ],
+            "Transparency & Explainability": [ // Renamed for clarity
+                "How clearly are individuals (patients, staff) informed when they are interacting with an AI system or when AI significantly influences decisions affecting them?",
+                "To what extent is AI-generated content or advice clearly labelled, and are methods in place to provide explanations for AI decisions appropriate to the context and risk?",
+                "How accessible are mechanisms for stakeholders to seek clarification or understanding about how an AI system operates or arrived at an outcome?"
+            ],
+            "Contestability & Redress": [ // Renamed for clarity
+                "How well-defined, accessible, and fair are the processes for individuals to challenge or seek redress for AI-driven decisions or outcomes that impact them?",
+                "To what extent are there clear escalation pathways and independent review options for contested AI decisions, particularly for high-impact cases?",
+                "How effectively does the organisation learn from contested AI decisions to improve its systems and redress procedures?"
+            ],
+            "Stakeholder Engagement": [
+                "How actively and inclusively does the organisation engage with diverse stakeholders (e.g., patients, clinicians, community groups, ethicists) throughout the AI lifecycle?",
+                "To what extent are stakeholder needs, values, and concerns regarding AI (e.g., fairness, equity, safety, trust) systematically identified, considered, and addressed?",
+                "How are feedback mechanisms on AI systems managed, and how is stakeholder input demonstrably incorporated into AI design, deployment, and governance?"
+            ]
+        };
+
+        const assessmentForm = document.getElementById('assessmentForm');
+        const dimensions = Object.keys(questionsData);
+
+        dimensions.forEach(dim => {
+            const section = document.createElement('div');
+            section.className = 'dimension-section';
+            const title = document.createElement('h2');
+            title.textContent = dim.replace(/\s*\(.*?\)\s*/g, ''); // Remove bracketed text for cleaner titles
+            section.appendChild(title);
+
+            questionsData[dim].forEach((qText, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                const p = document.createElement('p');
+                p.textContent = `Q${index + 1}: ${qText}`;
+                questionDiv.appendChild(p);
+
+                const select = document.createElement('select');
+                select.id = `${dim.toLowerCase().replace(/\s+/g, '-').replace(/\(|\)/g, '')}-${index}`; // Sanitize ID
+                select.dataset.dimension = dim;
+                const competencyLevels = ["Basic Awareness", "Developing", "Proficient", "Advanced", "Expert/Leading"];
+                for (let i = 1; i <= 5; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} - ${competencyLevels[i-1]}`;
+                    select.appendChild(option);
+                }
+                select.value = 3; // Default to Proficient
+                questionDiv.appendChild(select);
+                section.appendChild(questionDiv);
+            });
+            assessmentForm.appendChild(section);
+        });
+
+        let competencyRadarChart;
+        const chartCanvas = document.getElementById('competencyRadarChart').getContext('2d');
+        const tailoredPolicyOutputDiv = document.getElementById('tailoredPolicyOutput');
+        const tailoredPolicyContainerDiv = document.getElementById('tailoredPolicyContainer');
+
+        const orgData = {
+            name: "<span class='placeholder-text'>[Organisation Ltd.]</span>",
+            vision: "<span class='placeholder-text'>[ORGANISATION STRATEGY VISION - TO BE INSERTED BY ORGANISATION]</span>"
+        };
+
+        const policyClauseLibrary = [
+            {
+                id: "ACC_GOV_BODY_001",
+                topic: "Establishment and Mandate of AI Governance Body",
+                category: "I. Governance and Accountability Framework",
+                phrasings: [
+                    {
+                        text: `For ${orgData.name}, with a current Accountability competency score of <span class="competency-score-inline">{{scores['Accountability']}}</span>, it is **critically important to urgently establish or formalize** a dedicated AI Governance Committee. This committee must have a clear, documented charter defining its roles, responsibilities, decision-making authority, and reporting lines for overseeing all AI initiatives. Initial focus should be on developing foundational AI policies, ethical principles, and risk assessment procedures.`,
+                        condition: (scores) => scores['Accountability'] < 2.0,
+                        emphasisLevel: 2 // emphasis-strong
+                    },
+                    {
+                        text: `${orgData.name} **must ensure** it has an established AI Governance Committee (or equivalent body with a clear mandate) responsible for ethical oversight and compliance of AI deployments. The Terms of Reference should be well-documented, include multidisciplinary representation (legal, risk, IT, clinical/operational, ethics), and define processes for AI project review and approval. Current Accountability competency: <span class="competency-score-inline">{{scores['Accountability']}}</span>.`,
+                        condition: (scores) => scores['Accountability'] >= 2.0 && scores['Accountability'] < 3.5,
+                        emphasisLevel: 1
+                    },
+                    {
+                        text: `${orgData.name}, demonstrating Proficient to Advanced Accountability (Score: <span class="competency-score-inline">{{scores['Accountability']}}</span>), **will ensure** its AI Governance Committee is effectively integrated into strategic AI decision-making. The committee will regularly review and adapt AI policies, monitor compliance through audits, oversee high-risk AI applications, and report key AI governance metrics to executive leadership. Consideration should be given to including external ethics advisors or patient advocates for specific high-risk applications.`,
+                        condition: (scores) => scores['Accountability'] >= 3.5 && scores['Accountability'] < 4.5,
+                        emphasisLevel: 1
+                    },
+                    {
+                        text: `With an Expert/Leading Accountability competency (Score: <span class="competency-score-inline">{{scores['Accountability']}}</span>), ${orgData.name}'s AI Governance Committee **will provide strategic leadership** in responsible AI adoption. It will proactively identify emerging ethical challenges, champion AI literacy across the organization, foster a culture of responsible AI innovation, and contribute to broader industry best practices in AI governance.`,
+                        condition: (scores) => scores['Accountability'] >= 4.5,
+                        emphasisLevel: 1
+                    }
+                ],
+                fallbackText: `Consider establishing a formal AI governance oversight function within ${orgData.name}.`
+            },
+            {
+                id: "RM_RISK_FRAMEWORK_001",
+                topic: "AI Risk Management Framework",
+                category: "II. AI Risk Management",
+                phrasings: [
+                    {
+                        text: `Given the current AI Risk Management competency (Score: <span class="competency-score-inline">{{scores['Risk Management']}}</span>), ${orgData.name} **must urgently develop and implement** a foundational AI Risk Management Framework. This framework must define processes for identifying, assessing, documenting, treating, and continuously monitoring AI-specific risks (including bias, fairness, safety, security, and ethical implications). A clear methodology for distinguishing between low-risk and high-risk AI applications is essential to guide governance efforts.`,
+                        condition: (scores) => scores['Risk Management'] < 2.5 && (scores['Accountability'] < 3.0 || scores['Protect (Data & Systems)'] < 3.0),
+                        emphasisLevel: 2
+                    },
+                    {
+                        text: `${orgData.name} **should develop, document, and implement** a comprehensive AI Risk Management Framework. This framework must be integrated with the organisation's overall enterprise risk management system. It should include methodologies for AI risk assessment (proportionate to impact), defined risk appetite for AI, clear roles for risk ownership, and processes for escalating and reviewing high-risk AI initiatives by the AI Governance Committee. Current Risk Management competency: <span class="competency-score-inline">{{scores['Risk Management']}}</span>.`,
+                        condition: (scores) => scores['Risk Management'] < 3.5,
+                        emphasisLevel: 1
+                    },
+                    {
+                        text: `${orgData.name} **will maintain and continuously improve** its robust AI Risk Management Framework, ensuring it adapts to new AI technologies, evolving regulatory landscapes, and learnings from incidents or near-misses. This includes regular reviews and updates of risk assessment methodologies, ongoing training for staff involved in AI projects on risk identification and management, and proactive horizon scanning for emerging AI risks. Competency: <span class="competency-score-inline">{{scores['Risk Management']}}</span>.`,
+                        condition: (scores) => scores['Risk Management'] >= 3.5,
+                        emphasisLevel: 1
+                    }
+                ]
+            },
+            {
+                id: "PROTECT_DATA_AI_001",
+                topic: "Data Governance and Protection in AI Systems",
+                category: "III. Data Governance, Protection, and AI Performance",
+                phrasings: [
+                    {
+                        text: `With a Data & Systems Protection competency of <span class="competency-score-inline">{{scores['Protect (Data & Systems)']}}</span>, ${orgData.name} **must ensure** that robust data governance principles are applied to all AI systems. This includes establishing clear policies for data quality, integrity, provenance, and security, particularly for sensitive health information. Privacy Impact Assessments (PIAs) must be conducted for AI systems processing personal information, and appropriate privacy-preserving techniques should be implemented.`,
+                        condition: (scores) => scores['Protect (Data & Systems)'] < 3.0,
+                        emphasisLevel: 2
+                    },
+                    {
+                        text: `${orgData.name} will uphold strong data governance and protection standards for its AI systems (Data Protection Competency: <span class="competency-score-inline">{{scores['Protect (Data & Systems)']}}</span>). This includes implementing appropriate technical and organisational measures to ensure data security, confidentiality, and compliance with the Privacy Act and relevant health records legislation. Regular audits of data handling practices within AI systems will be conducted.`,
+                        condition: (scores) => scores['Protect (Data & Systems)'] >= 3.0,
+                        emphasisLevel: 1
+                    }
+                ]
+            },
+            {
+                 id: "PERF_MONITOR_001",
+                 topic: "AI Model Performance and Monitoring",
+                 category: "III. Data Governance, Protection, and AI Performance",
+                 phrasings: [
+                    {
+                        text: `Considering the current AI Performance & Monitoring competency (Score: <span class="competency-score-inline">{{scores['Performance & Monitoring']}}</span>), ${orgData.name} **must establish and implement** a rigorous framework for testing, validating, and continuously monitoring AI model performance. This includes assessing accuracy, reliability, fairness, robustness against adversarial inputs, and explainability before deployment and throughout the model lifecycle. KPIs for AI performance must be defined and tracked.`,
+                        condition: (scores) => scores['Performance & Monitoring'] < 3.0,
+                        emphasisLevel: 2
+                    },
+                    {
+                        text: `${orgData.name} will ensure all AI models undergo thorough testing and validation prior to deployment and are subject to ongoing performance monitoring (Competency Score: <span class="competency-score-inline">{{scores['Performance & Monitoring']}}</span>). This includes proactive monitoring for model drift, degradation, or unintended biases, with established feedback loops for retraining, recalibration, or decommissioning of models as necessary. If Human Control competency (<span class="competency-score-inline">{{scores['Human Control & Oversight']}}</span>) is also low, particular emphasis must be placed on fail-safes.`,
+                        condition: (scores) => scores['Performance & Monitoring'] >= 3.0 && scores['Human Control & Oversight'] < 2.5, // Example of combined logic
+                        emphasisLevel: 3 // emphasis-highlight
+                    },
+                     {
+                        text: `${orgData.name} will maintain robust processes for AI model testing, validation, and continuous lifecycle monitoring (Competency Score: <span class="competency-score-inline">{{scores['Performance & Monitoring']}}</span>). This includes tracking defined KPIs, managing model drift, and ensuring feedback mechanisms are in place for continuous improvement or decommissioning of AI systems.`,
+                        condition: (scores) => scores['Performance & Monitoring'] >= 3.0 && scores['Human Control & Oversight'] >= 2.5,
+                        emphasisLevel: 1
+                    }
+                 ]
+            },
+            {
+                id: "SC_VENDOR_RISK_001",
+                topic: "Third-Party AI Vendor Risk Management",
+                category: "IV. AI Supply Chain and Vendor Management",
+                phrasings: [
+                    {
+                        text: `Given the Supply Chain competency (<span class="competency-score-inline">{{scores['Supply Chain (AI Vendors)']}}</span>) and Risk Management competency (<span class="competency-score-inline">{{scores['Risk Management']}}</span>), ${orgData.name} **must ensure** that its AI Risk Management Framework explicitly addresses risks associated with third-party AI solutions and vendors. This requires establishing thorough due diligence processes for selecting AI vendors, assessing their AI ethics, data security, model transparency, and compliance capabilities.`,
+                        condition: (scores) => scores['Supply Chain (AI Vendors)'] < 3.5 || scores['Risk Management'] < 3.0,
+                        emphasisLevel: 2
+                    },
+                    {
+                        text: `${orgData.name} will incorporate specific procedures for assessing, managing, and monitoring risks related to third-party AI vendors and components. This includes clear contractual requirements for data governance, security, performance standards, audit rights, and incident response. Ongoing vendor performance and compliance will be monitored. Supply Chain Competency: <span class="competency-score-inline">{{scores['Supply Chain (AI Vendors)']}}</span>.`,
+                        condition: (scores) => scores['Supply Chain (AI Vendors)'] >= 3.5 && scores['Risk Management'] >= 3.0,
+                        emphasisLevel: 1
+                    }
+                ]
+            }
+            // ... more clauses for Transparency, Human Control, Contestability, Stakeholder Engagement etc.
+        ];
+
+        function generateTailoredPolicyHTML_V2(competencyScores) {
+            let htmlOutput = "";
+            const selectedClauses = [];
+
+            policyClauseLibrary.forEach(clause => {
+                let chosenText = null;
+                let selectedEmphasis = 1; // Default no special emphasis
+
+                // Deep copy competencyScores for placeholder replacement within condition checks if ever needed
+                // For now, conditions use the original competencyScores object directly
+                
+                for (const phrasing of clause.phrasings) {
+                    let currentPhrasingText = phrasing.text; // Work with a copy for placeholder replacement
+
+                    // Replace {{scores['Dimension']}} placeholders within the text *before* condition check if the text itself uses them
+                    // This is primarily for displaying scores in the text, not for condition logic.
+                    for (const dim in competencyScores) {
+                        if (Object.hasOwnProperty.call(competencyScores, dim)) {
+                            const scoreValue = competencyScores[dim] !== undefined ? competencyScores[dim].toFixed(1) : 'N/A';
+                            const regex = new RegExp(`{{\\s*scores\\['${dim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}']\\s*}}`, 'g');
+                            currentPhrasingText = currentPhrasingText.replace(regex, scoreValue);
+                        }
+                    }
+                    
+                    if (phrasing.condition(competencyScores)) {
+                        chosenText = currentPhrasingText; // Use the text with scores already interpolated
+                        if (phrasing.emphasisLevel) selectedEmphasis = phrasing.emphasisLevel;
+                        break; 
+                    }
+                }
+
+                if (!chosenText && clause.fallbackText) {
+                    chosenText = clause.fallbackText;
+                    for (const dim in competencyScores) { // Also process fallback for score display
+                         if (Object.hasOwnProperty.call(competencyScores, dim)) {
+                            const scoreValue = competencyScores[dim] !== undefined ? competencyScores[dim].toFixed(1) : 'N/A';
+                            const regex = new RegExp(`{{\\s*scores\\['${dim.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}']\\s*}}`, 'g');
+                            chosenText = chosenText.replace(regex, scoreValue);
+                        }
+                    }
+                }
+                
+                if (chosenText) {
+                     // Replace global placeholders like orgData.name
+                    chosenText = chosenText.replace(new RegExp(orgData.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), orgData.name); // Ensure orgData.name is treated as literal
+
+                    selectedClauses.push({
+                        category: clause.category,
+                        topic: clause.topic,
+                        text: chosenText,
+                        emphasis: selectedEmphasis
+                    });
+                }
+            });
+
+            const categoriesInOrder = [
+                "I. Governance and Accountability Framework",
+                "II. AI Risk Management",
+                "III. Data Governance, Protection, and AI Performance",
+                "IV. AI Supply Chain and Vendor Management",
+                // Add other categories in the desired order
+            ];
+
+            const groupedClauses = {};
+            categoriesInOrder.forEach(cat => groupedClauses[cat] = []); // Initialize all ordered categories
+            
+            selectedClauses.forEach(clause => {
+                if (!groupedClauses[clause.category]) {
+                    groupedClauses[clause.category] = []; // For categories not in fixed order (safety net)
+                }
+                groupedClauses[clause.category].push(clause);
+            });
+
+
+            categoriesInOrder.forEach(categoryName => {
+                if (groupedClauses[categoryName] && groupedClauses[categoryName].length > 0) {
+                    htmlOutput += `<div class="policy-category"><h2>${categoryName}</h2>`;
+                    groupedClauses[categoryName].forEach(clause => {
+                        let emphasisClass = '';
+                        if (clause.emphasis === 2) emphasisClass = 'emphasis-strong';
+                        if (clause.emphasis === 3) emphasisClass = 'emphasis-highlight';
+                        
+                        htmlOutput += `<div class="policy-clause ${emphasisClass}">`;
+                        htmlOutput += `<h3>${clause.topic}</h3>`;
+                        htmlOutput += `<p>${clause.text}</p>`;
+                        htmlOutput += `</div>`;
+                    });
+                    htmlOutput += `</div>`;
+                }
+            });
+             if (!htmlOutput.trim()) {
+                htmlOutput = "<p><em>No specific policy guidance generated based on the current competency scores. Please review your inputs or consult an AI governance expert. This may indicate that the defined competency levels did not trigger specific clauses.</em></p>";
+            }
+
+            return htmlOutput;
+        }
+
+
+        document.getElementById('generateChartBtn').addEventListener('click', () => {
+            const competencyScores = {};
+            dimensions.forEach(dim => {
+                const dimSelects = assessmentForm.querySelectorAll(`select[data-dimension="${dim}"]`);
+                let sum = 0;
+                dimSelects.forEach(sel => sum += parseInt(sel.value));
+                competencyScores[dim] = sum / dimSelects.length;
+            });
+
+            if (competencyRadarChart) {
+                competencyRadarChart.destroy();
+            }
+            competencyRadarChart = new Chart(chartCanvas, {
+                type: 'radar',
+                data: {
+                    labels: dimensions.map(dim => dim.replace(/\s*\(.*?\)\s*/g, '')), // Cleaned labels for chart
+                    datasets: [{
+                        label: 'AI Governance Competency',
+                        data: dimensions.map(dim => competencyScores[dim]),
+                        fill: true,
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                        borderColor: 'rgb(0, 123, 255)',
+                        pointBackgroundColor: 'rgb(0, 123, 255)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(0, 123, 255)'
+                    }]
+                },
+                options: {
+                    elements: { line: { borderWidth: 3 } },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 1,
+                            suggestedMax: 5,
+                            ticks: { stepSize: 1, font: { weight: 'bold' }, backdropColor: 'rgba(255,255,255,0.75)'},
+                            pointLabels: { font: { size: 13, weight: 'bold' }, color: '#005a9c' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' }
+                        }
+                    },
+                    plugins: { legend: { labels: { font: { size: 14, weight: 'bold' } } } }
+                }
+            });
+
+            const tailoredHTML = generateTailoredPolicyHTML_V2(competencyScores);
+            tailoredPolicyOutputDiv.innerHTML = tailoredHTML;
+            tailoredPolicyContainerDiv.style.display = 'block';
+            tailoredPolicyContainerDiv.scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
